@@ -83,7 +83,7 @@ namespace OIS2
 			if (logLevel < _logLevel && _logLevel != LogLevel::None)
 				return;
 
-			// Convert to safer array
+			// Convert to a typed array - to be sent to derived classes
 			LogArgument argArray[] = {args...};
 			_Log(logLevel, message, argArray, sizeof...(Args));
 		}
@@ -101,9 +101,9 @@ namespace OIS2
 	public:
 		NullLogger() : ILogger(LogLevel::None) {}
 		virtual ~NullLogger() {}
-		virtual void Log(LogLevel logLevel, std::string_view message) {}
+		inline virtual void Log(LogLevel logLevel, std::string_view message) {}
 	
 	protected:
-		virtual void _Log(LogLevel logLevel, const std::string_view &message, const LogArgument args [], size_t numberOfArgs) {}
+		inline virtual void _Log(LogLevel logLevel, const std::string_view &message, const LogArgument args [], size_t numberOfArgs) {}
 	};
 }

@@ -40,6 +40,9 @@ void InputManager::ThreadedRunLoop()
 	while(_running)
 	{
 		std::this_thread::sleep_for(std::chrono::seconds(10));
+
+		// TODO: This thread will need to periodically scan, detect, and handle connects/reconnects
+		// TODO: This thread will also (on poll based devices?) check the latest status of the devices
 	}
 	_logger->Log(LogLevel::Trace, "InputManager thread end");
 }
