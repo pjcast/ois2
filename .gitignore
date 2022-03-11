@@ -1,2 +1,5 @@
 .vscode/**
-build/**
+**/build/**
+
+# This file gets auto generated
+OIS2Prereqs.h

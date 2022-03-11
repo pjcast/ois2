@@ -1,0 +1,10 @@
+{
+	"folders": [
+		{
+			"path": "libs/"
+		},
+		{
+			"path": "examples/linux"
+		}
+	]
+}

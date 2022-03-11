@@ -1,0 +1,140 @@
+/*
+The zlib/libpng License
+
+Copyright (c) 2018 Arthur Brainville
+Copyright (c) 2015 Andrew Fenn
+Copyright (c) 2005-2010 Phillip Castaneda (pjcast -- www.wreckedgames.com)
+
+This software is provided 'as-is', without any express or implied warranty. In no
+event will the authors be held liable for any damages arising from the use of this
+software.
+
+Permission is granted to anyone to use this software for any purpose, including
+commercial applications, and to alter it and redistribute it freely, subject to the
+following restrictions:
+
+    1. The origin of this software must not be misrepresented; you must not claim that
+        you wrote the original software. If you use this software in a product,
+        an acknowledgment in the product documentation would be appreciated
+        but is not required.
+
+    2. Altered source versions must be plainly marked as such, and must not be
+        misrepresented as being the original software.
+
+    3. This notice may not be removed or altered from any source distribution.   
+*/
+#ifndef OIS2_Prereqs_H
+#define OIS2_Prereqs_H
+//----------------------------------------------------------------------------//
+// This Header File contains: forward declared classes
+//  * Forward Declarations of all public API classes
+//  * Several typedef's used around the library
+//  * Base class component types
+//  * Preprocessor definitons
+//----------------------------------------------------------------------------//
+
+//-------------- Common STL Containers ---------------------------------------//
+#include <vector>
+#include <string>
+#include <map>
+
+// Default is blank for most OS's
+#define _OIS2Export
+
+//-------------- Determine Compiler ---------------------------------
+#if defined( _MSC_VER )
+#	define OIS2_MSVC_COMPILER
+#elif defined( __GNUC__ )
+#	if defined( __WIN32__ ) || defined( _WIN32 )
+#		define OIS2_MINGW_COMPILER
+#	else
+#		define OIS2_GCC_COMPILER
+#	endif
+#elif defined( __BORLANDC__ )
+#	define OIS2_BORLAND_COMPILER
+#else
+#	error No Recognized Compiler!
+#endif
+
+// --------------- Determine Operating System Platform ---------------
+#if defined( __WIN32__ ) || defined( _WIN32 ) // Windows 2000, XP, ETC
+#	if defined ( _XBOX )
+#		define OIS2_XBOX_PLATFORM
+#	else
+#		define OIS2_WIN32_PLATFORM
+#		if defined( OIS2_DYNAMIC_LIB )
+#			undef _OIS2Export
+			//Ignorable Dll interface warning...
+#           if !defined(OIS2_MINGW_COMPILER)
+#			    pragma warning (disable : 4251)
+#           endif
+#			if defined( OIS2_NONCLIENT_BUILD )
+#				define _OIS2Export __declspec( dllexport )
+#			else
+#               if defined(OIS2_MINGW_COMPILER)
+#                   define _OIS2Export
+#               else
+#				    define _OIS2Export __declspec( dllimport )
+#               endif
+#			endif
+#		endif
+#	endif
+#elif defined( __APPLE_CC__ ) // Apple OS X
+    // Device                                       Simulator
+#   if __IPHONE_OS_VERSION_MIN_REQUIRED >= 20201 || __IPHONE_OS_VERSION_MIN_REQUIRED >= 20000
+//#   if __IPHONE_OS_VERSION_MIN_REQUIRED >= 30000 || __IPHONE_OS_VERSION_MIN_REQUIRED >= 30000
+#       define OIS2_IPHONE_PLATFORM
+#   else
+#       define OIS2_APPLE_PLATFORM
+#   endif
+#   undef _OIS2Export
+#   define _OIS2Export __attribute__((visibility("default")))
+#else //Probably Linux
+#	define OIS2_LINUX_PLATFORM
+#	include <unistd.h>
+#endif
+
+//Is Processor 32 or 64 bits...
+#if defined(__x86_64__)
+#	define OIS2_ARCH_64
+#else
+#	define OIS2_ARCH_32
+#endif
+
+//-------------- Various helper preprocessor definitions ---------------------//
+
+#ifdef OIS2_MSVC_COMPILER
+#	define OIS2_INLINE_PRAGMA(x) __pragma(x) // x is intentionally not wrapped; __pragma rejects expressions beginning with '('.
+#else
+#	define OIS2_INLINE_PRAGMA(x)
+#endif
+
+#define OIS2_MACRO_BEGIN do {
+
+#define OIS2_MACRO_END \
+	} OIS2_INLINE_PRAGMA(warning(push)) OIS2_INLINE_PRAGMA(warning(disable:4127)) while (0) OIS2_INLINE_PRAGMA(warning(pop))
+
+// This creative trickery taken from this StackOverflow answer:
+// http://stackoverflow.com/questions/4030959/will-a-variablename-c-statement-be-a-no-op-at-all-times/4030983#4030983
+#define OIS2_UNUSED(x)\
+	OIS2_MACRO_BEGIN\
+		((void)(true ? 0 : ((x), void(), 0)));\
+	OIS2_MACRO_END
+
+//-------------- Common Classes, Enums, and Typdef's -------------------------//
+#define OIS2_VERSION_MAJOR @OIS2_MAJOR_VERSION@
+#define OIS2_VERSION_MINOR @OIS2_MINOR_VERSION@
+#define OIS2_VERSION_PATCH @OIS2_PATCH_VERSION@
+#define OIS2_VERSION_NAME "@OIS2_SOVERSION@"
+
+#define OIS2_VERSION ((OIS2_VERSION_MAJOR << 16) | (OIS2_VERSION_MINOR << 8) | OIS2_VERSION_PATCH)
+
+namespace OIS2
+{
+	//Forward Declarations
+	class ILogger;
+	class InputManager;
+	class DeviceDescriptor;
+}
+
+#endif //end if prereq header defined
