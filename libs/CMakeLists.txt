@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 project(OIS2 VERSION 1.0.0)
 
-#set_target_properties(OIS2 PROPERTIES CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD 17)
 
 if(NOT CMAKE_DEBUG_POSTFIX)
@@ -28,7 +27,6 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 option(OIS_BUILD_SHARED_LIBS "Build shared libraries" ON)
-option(OIS_BUILD_DEMOS "Build demo applications" ON)
 set(CMAKE_MACOSX_RPATH 0)
 
 include_directories(
@@ -63,10 +61,48 @@ source_group("OIS2" FILES ${ois_source})
 
 add_library(OIS2 ${ois_source})
 
+if(UNIX)
+	#if (NOT APPLE)
+	#	add_dependencies(OIS2 X11)
+	#	target_link_libraries(OIS2 X11)
+	#endif()
+
+	set_target_properties(OIS2 PROPERTIES
+		VERSION ${OIS2_VERSION}
+		SOVERSION ${OIS2_SOVERSION}
+	)
+endif()
+
+if(UNIX)
+	include(GNUInstallDirs)
+	set(LIB_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR})
+else()
+	set(LIB_INSTALL_DIR "lib")
+endif()
+
+set(OIS2_LIB_DIRECTORY ${CMAKE_INSTALL_PREFIX}/${LIB_INSTALL_DIR})
+
+file(GLOB PUBLIC_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/ois2/includes/*.h")
+
+install(FILES ${PUBLIC_HEADERS}
+	DESTINATION include/ois2
+)
+
+install(TARGETS OIS2
+	RUNTIME DESTINATION bin
+	LIBRARY DESTINATION ${LIB_INSTALL_DIR}
+	ARCHIVE DESTINATION ${LIB_INSTALL_DIR}
+	FRAMEWORK DESTINATION Library/Frameworks
+)
+
 #target_link_libraries(Test PRIVATE Threads::Threads)
 #target_link_libraries(Test PRIVATE udev)
 
-# TODO: Investigate this cross platform installer
-#set(CPACK_PROJECT_NAME ${PROJECT_NAME})
-#set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
-#include(CPack)
+# Test runner
+source_group("Ois2Tests" FILES "${CMAKE_CURRENT_SOURCE_DIR}/ois2/tests/LoggerTests.cpp")
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/ois2/tests)
+add_executable(Ois2Tests "${CMAKE_CURRENT_SOURCE_DIR}/ois2/tests/LoggerTests.cpp")
+#set_target_properties(Ois2Tests PROPERTIES SOLUTION_FOLDER "OIS2 Console Demo")
+target_link_libraries(Ois2Tests OIS2)
+target_link_libraries(Ois2Tests Threads::Threads)
+target_link_libraries(Ois2Tests udev)

@@ -5,15 +5,6 @@
 
 namespace OIS2
 {
-	enum LogLevel
-	{
-		None = 0,
-		Trace,
-		Debug,
-		Warning,
-		Error
-	};
-
 	//! Type'd variadic type
 	class LogArgument
 	{
@@ -56,9 +47,19 @@ namespace OIS2
 		}
 	};
 
-	//! Abstract class for providing logging
+	//! Abstract class for providing logging. Any custom overrides must ensure thread safety.
 	class ILogger
 	{
+	public:
+		enum LogLevel
+		{
+			None = 0,
+			Trace,
+			Debug,
+			Warning,
+			Error
+		};
+
 	protected:
 		LogLevel _logLevel;
 
@@ -72,6 +73,23 @@ namespace OIS2
 
 		LogLevel GetLogLevel() { return _logLevel; }
 
+		std::string_view GetLogLevelString(LogLevel logLevel)
+		{
+			switch(logLevel)
+			{
+				case LogLevel::Debug: return "Debug";
+				case LogLevel::Trace: return "Trace";
+				case LogLevel::Warning: return "Warn";
+				case LogLevel::Error: return "Error";
+				default: return "Default";
+			}
+		}
+
+		inline bool ShouldLog(LogLevel logLevel) 
+		{
+			return (logLevel >= _logLevel && _logLevel != LogLevel::None);
+		}
+
 		//! Basic Log() method for logging single string
 		virtual void Log(LogLevel logLevel, std::string_view message) = 0;
 
@@ -80,30 +98,22 @@ namespace OIS2
 		template <typename... Args>
 		void Log(LogLevel logLevel, std::string_view message, const Args&... args)
 		{
-			if (logLevel < _logLevel && _logLevel != LogLevel::None)
+			if (!ShouldLog(logLevel))
 				return;
 
 			// Convert to a typed array - to be sent to derived classes
 			LogArgument argArray[] = {args...};
-			_Log(logLevel, message, argArray, sizeof...(Args));
+			LogFormat(logLevel, message, argArray, sizeof...(Args));
 		}
 
-		static std::unique_ptr<ILogger> UseNullLogger();
+		//! Thread Safe, basic stdout/stderr logger.
 		static std::unique_ptr<ILogger> UseStdLogger(LogLevel logLevel = LogLevel::Warning);
 
 	protected:
-		virtual void _Log(LogLevel logLevel, const std::string_view &message, const LogArgument args [], size_t numberOfArgs) = 0;
-	};
+		//! If overriden, you must handle format parsing.
+		virtual void LogFormat(LogLevel logLevel, const std::string_view &message, const LogArgument args [], size_t numberOfArgs);
 
-	//! No-Op logger - should get inlined to have minor performance impact
-	class NullLogger: public ILogger
-	{
-	public:
-		NullLogger() : ILogger(LogLevel::None) {}
-		virtual ~NullLogger() {}
-		inline virtual void Log(LogLevel logLevel, std::string_view message) {}
-	
-	protected:
-		inline virtual void _Log(LogLevel logLevel, const std::string_view &message, const LogArgument args [], size_t numberOfArgs) {}
+		//! Convert arguments to strings (basic value to string - no special formatting)
+		void GetArgStrings(const LogArgument args[], size_t numberOfArgs, std::vector<std::string> &outArgStrings);
 	};
 }

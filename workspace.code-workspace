@@ -4,7 +4,12 @@
 			"path": "libs/"
 		},
 		{
-			"path": "examples/linux"
+			"path": "examples/"
 		}
-	]
+	],
+	"settings": {
+		"files.associations": {
+			"sstream": "cpp"
+		}
+	}
 }
