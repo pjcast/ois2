@@ -31,6 +31,7 @@ set(CMAKE_MACOSX_RPATH 0)
 
 include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}/ois2/includes
+	${CMAKE_CURRENT_SOURCE_DIR}/ois2/includes/internal
 )
 
 if (UNIX AND NOT APPLE)
@@ -55,6 +56,7 @@ set(ois_source
     "${CMAKE_CURRENT_SOURCE_DIR}/ois2/src/OIS2DeviceDescriptor.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/ois2/src/OIS2InputManager.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/ois2/src/OIS2Logger.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/ois2/src/OIS2Tokenizer.cpp"
 )
 
 source_group("OIS2" FILES ${ois_source})
